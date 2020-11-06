@@ -8,12 +8,14 @@ This tool let's you use basic [FLow annotation syntax](https://flow.org/en/docs/
 Jump to:
 - [Supported *Flow* annotations](#supported-flow-annotations)
 - [Using a reusable type](#using-a-reusable-type)
+- [Usage with PHP 7 expectations](#usage-with-php-7-expectations)
 - [Validator \Closures](#validator-closures)
 - [Public API](#api)
 - [Installation](#installation)
 
 TODO:
 
+- [x] Add support for [PHP 7 expectations](https://www.php.net/manual/en/function.assert.php#function.assert.expectations)
 - [ ] Add support for [`$Exact<T>` utility type](https://flow.org/en/docs/types/utilities/#toc-exact)
 - [ ] Publish asserts for at least some cases
 
@@ -78,13 +80,13 @@ A registered type can be later
 use Duck\Types\Type;
 use Duck\Types\IncompatibleTypeError;
 
-Type::set('nonNegativeNumber', function ($value = null) {
+Type::set('nonNegativeNumber', function ($value = null): bool {
   if (!isset($value) || !(is_float($value) || is_int($value)) || $value < 0) {
     throw new IncompatibleTypeError( $value, 'not a non-negative number');
   }
 });
 
-Type::set('largerThan100', function ($value = null) {
+Type::set('largerThan100', function ($value = null): bool {
   if ($value <= 100) {
     throw new IncompatibleTypeError( $value, 'not larger than 100');
   }
@@ -116,14 +118,44 @@ Type::shouldThrowIncompatibleTypeError('Default value is incompatible with ?larg
 
 ```
 
+## Usage with PHP 7 expectations
+
+> assert ( mixed $assertion [, Throwable $exception ] ) : bool
+> - Checks if assertion is FALSE
+> - $assertion in PHP 7 may also be **any expression that returns a value**, which will be executed and the result used to indicate whether the assertion succeeded or failed.
+
+Source: [php.net](https://www.php.net/manual/en/function.assert.php#function.assert.expectations)
+
+An expression can be a function call, so let's use that:
+
+```php
+<?php
+
+// Assert failed validation of type `?bool` example:
+
+$error = Type::shouldThrowIncompatibleTypeError(
+  'integer literal 1 is incompatible with union',
+  function () {
+    assert((Type::get('?bool'))(1));
+    // Fails with 2 errors:
+    // - integer literal 1 is incompatible with null
+    // - integer literal 1 is incompatible with bool
+  }
+);
+
+// Print all the caught errors
+var_dump($error->getMessages());
+
+```
+
 ---
 
 Validator `\Closures`
 --------------------
 
-Anonymous functions with one parameter that throw `IncompatibleTypeError` when the validation fails.
+Validator is an anonymous functions accepting one optional parameter that throws `IncompatibleTypeError` when the validation fails. Validator is required to return `bool` type also to comply with [assert()](https://www.php.net/manual/en/function.assert.php).
 
-Allow closure to pass null to cover scenario when the value is missing
+Optional parameter allows closure to pass `null | undefined` to cover scenarios when the value is missing and to control the thrown more meaningful message thatn PHP's built-in one.
 
 ### Validator example:
 
@@ -132,7 +164,7 @@ Allow closure to pass null to cover scenario when the value is missing
 
 use Duck\Types\IncompatibleTypeError;
 
-$nonNegativeNumber = function ($value = null) {
+$nonNegativeNumber = function ($value = null): bool {
   if (!isset($value) || !(is_float($value) || is_int($value)) || $value < 0) {
     throw new IncompatibleTypeError( $value, 'not a non-negative number');
   }
@@ -148,19 +180,19 @@ API
 
 ### *final class* `Annotation`
 
-> — *static* function **parse**(`string` **$annotation**): `array`;\
+— *static* function **parse**(`string` **$annotation**): `array`;\
 > Parse [supported *Flow* annotations](#supported-annotations) into AST-like tree
 >   that can be used in `Annotation::compile()` later
 > - `string` **$annotation** — Flow annotation
 > - `array` **AST** —-like tree
 >
-> — *static* function **compile**(`array` **$tree**): `\Closure`;\
+— *static* function **compile**(`array` **$tree**): `\Closure`;\
 > Compiles AST-like tree into validator \Closure
 > - `array` **$tree** — AST-like tree genereated with `Annotation::parse()`
 
 ### *final class* `Type`
 
-> — *static* function **pass**(**$value** = *null*, **$type**, **$default** = *null*): `mixed`;
+— *static* function **pass**(**$value** = *null*, **$type**, **$default** = *null*): `mixed`;
 >
 > Passes `$value` through if it is compatible with the $type otherwise throws
 > a new `IncompatibleTypeError`.
@@ -174,7 +206,7 @@ API
 > - `string|\Closure` **$type** — Annotation or validation \Closure
 > - `mixed` **$default** — Optional value to pass if the `$value` is not set
 >
-> — *static* function **set**(string **$name**, **$validator**): void;
+— *static* function **set**(string **$name**, **$validator**): void;
 >
 > Registers a new type
 >
@@ -183,13 +215,17 @@ API
 > - `callable|string` **$type** — Validation \Closure, callable to Type::wrap(),
 >   type name alias or Flow annotation.
 >
-> — *static* function **get**(`string` **$name**): `\Closure`;
+— *static* function **get**(`string` **$name**): `\Closure`;
 >
-> Retrieves an already registered type from registry
+> Retrieves an already registered type by it's name, literal validators
+> or tries by parsing annotations.
 >
-> - `string` **$name** — Type name alias to retireve
+> Even though this method can parse annotation, it's much more efficient to
+> use `Type::set()` directly.
 >
-> — *static* function **wrap**(callable **$function**, `string` **$type** = *null*): \Closure;
+> - `string` **$name** — Type name alias or type annotation to retireve
+>
+— *static* function **wrap**(callable **$function**, `string` **$type** = *null*): \Closure;
 >
 > Wraps existing callable and throws according to result
 >
@@ -201,9 +237,11 @@ API
 > - `string|null` **$type** — Name to use in \Throwable message
 > - `callable|null` **$shouldThrow** — Resolves whether to throw according to the result value of $callable.
 >
-> — *static* function **shouldThrowIncompatibleTypeError**(`string` **$message**, `callable` **$test**): `mixed`;
+— *static* function **shouldThrowIncompatibleTypeError**(`string` **$message**, `callable` **$test**): `IncompatibleTypeError`;
 >
 > Assertion to test if the type validation fails
+>
+> Returns IncompatibleTypeError for further investigation.
 >
 > - `string` **$message** — Message to compare to
 > - `callable` **$test** — Callable test to invoke
@@ -217,14 +255,14 @@ API
 >
 > This class is final. Use composition instead of inheritance.
 >
-> — function **__construct**(**$given**, `string` **$unexpected**, **$previous** = *null*): `IncompatibleTypeError`;
+— function **__construct**(**$given**, `string` **$unexpected**, **$previous** = *null*): `IncompatibleTypeError`;
 >
 > Class constructor
 >
 > - `mixed` **$given** — Tested value of escaped string, e.g. object property
 > - `string` **$unexpected** — Unexpected condition met, e.g. `'not integer'`
 >
-> — function **getMessages**(string $path = ''): `string | string[]`;
+— function **getMessages**(string $path = ''): `string | string[]`;
 >
 > Retrieves all error messages
 

@@ -26,8 +26,7 @@ class Utils {
    * @param callable $function
    * @return string|void
    */
-  public static function getReturnType(callable $function) {
-    $reflection = new \ReflectionFunction($function);
+  public static function getReturnType(\ReflectionFunction $reflection) {
     $returnType = $reflection->getReturnType();
 
     if ($returnType) {

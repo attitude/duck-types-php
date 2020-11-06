@@ -530,14 +530,14 @@ final class Annotation implements AnnotationInterface {
 
     switch ($expression) {
       case Annotation::UNION_ANNOTATION:
-        return function($value = null) use ($tree) {
+        return function($value = null) use ($tree): bool {
           $errors = [];
 
           foreach ($tree as $type) {
             try {
               $type($value);
 
-              return;
+              return true;
             } catch (\TypeError $th) {
               $errors[] = static::maybeThrowException($th);
             }
@@ -552,11 +552,13 @@ final class Annotation implements AnnotationInterface {
             IncompatibleTypeError::INCOMPATIBLE_WITH_UNION,
             $errors,
           );
+
+          return true;
         };
       break;
 
       case Annotation::INTERSECTION_ANNOTATION:
-        return function($value = null) use ($tree) {
+        return function($value = null) use ($tree): bool {
           $errors = [];
 
           foreach ($tree as $type) {
@@ -568,7 +570,7 @@ final class Annotation implements AnnotationInterface {
           }
 
           if (empty($errors)) {
-            return;
+            return true;
           }
 
           throw new IncompatibleTypeError(
@@ -576,11 +578,13 @@ final class Annotation implements AnnotationInterface {
             IncompatibleTypeError::INCOMPATIBLE_WITH_INTERSECTION,
             $errors
           );
+
+          return true;
         };
       break;
 
       case Annotation::ARRAY_ANNOTATION:
-        return function ($value) use ($tree) {
+        return function ($value) use ($tree): bool {
           if (!is_array($value)) {
             throw new IncompatibleTypeError(
               $value,
@@ -603,7 +607,7 @@ final class Annotation implements AnnotationInterface {
           $errorsCount = count($errors);
 
           if ($errorsCount === 0) {
-            return;
+            return true;
           }
 
           throw new IncompatibleTypeError(
@@ -611,6 +615,8 @@ final class Annotation implements AnnotationInterface {
             IncompatibleTypeError::INCOMPATIBLE_IN_ARRAY_MEMBERS,
             $errors,
           );
+
+          return true;
         };
       break;
 
@@ -619,7 +625,7 @@ final class Annotation implements AnnotationInterface {
         $shape = &$tree[0]['shape'];
         $indexer = &$tree[0]['indexer'];
 
-        return function($value) use ($exact, $shape, $indexer) {
+        return function($value) use ($exact, $shape, $indexer): bool {
           if (!is_array($value) && !is_object($value)) {
             throw new IncompatibleTypeError(
               $value,
@@ -703,7 +709,7 @@ final class Annotation implements AnnotationInterface {
           $errorsCount = count($errors);
 
           if ($errorsCount === 0) {
-            return;
+            return true;
           }
 
           throw new IncompatibleTypeError(
@@ -713,12 +719,14 @@ final class Annotation implements AnnotationInterface {
               : IncompatibleTypeError::INCOMPATIBLE_IN_SHAPE_PROPERTIES,
             $errors
           );
+
+          return true;
         };
       break;
 
       case Annotation::TUPLE_ANNOTATION:
         $tuple = &$tree[0];
-        return function ($value = null) use ($tuple) {
+        return function ($value = null) use ($tuple): bool {
           if (!is_array($value)) {
             throw new IncompatibleTypeError(
               $value,
@@ -753,7 +761,7 @@ final class Annotation implements AnnotationInterface {
           }
 
           if (empty($errors)) {
-            return;
+            return true;
           }
 
           throw new IncompatibleTypeError(
@@ -761,6 +769,8 @@ final class Annotation implements AnnotationInterface {
             IncompatibleTypeError::INCOMPATIBLE_IN_TUPLE_MEMBERS,
             $errors
           );
+
+          return true;
         };
       break;
 

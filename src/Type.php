@@ -32,101 +32,123 @@ final class Type implements TypeInterface {
     switch ($name) {
       // Existential type only to check whether value is set. Use with caution
       case '*':
-        static::$registry[$name] = function ($value = null) {
+        static::set($name, function ($value = null): bool {
           if (!isset($value)) {
             throw new IncompatibleTypeError($value, 'incompatible with existential');
           }
-        };
+
+          return true;
+        });
       break;
 
       case 'null':
-        static::$registry[$name] = function ($value = null) {
+        static::set($name, function ($value = null): bool {
           if ($value !== null) {
             throw new IncompatibleTypeError($value, 'incompatible with null');
           }
-        };
+
+          return true;
+        });
       break;
 
       case 'undefined':
-        static::$registry[$name] = function ($value = null) {
+        static::set($name, function ($value = null): bool {
           if (isset($value)) {
             throw new IncompatibleTypeError($value, 'incompatible with undefined');
           }
-        };
+
+          return true;
+        });
       break;
 
       case 'number':
-        static::$registry[$name] = function($value) {
+        static::set($name, function ($value = null): bool {
           if (is_int($value) || is_float($value) || is_double($value)) {
-            return;
+            return true;
           }
 
           throw new IncompatibleTypeError($value, 'incompatible with number');
-        };
+        });
       break;
 
       case 'numeric':
-        static::$registry[$name] = function($value) {
+        static::set($name, function ($value = null): bool {
           if (!is_numeric($value)) {
             throw new IncompatibleTypeError($value, 'incompatible with numeric');
           }
-        };
+
+          return true;
+        });
       break;
 
       case 'string':
-        static::$registry[$name] = function ($value) {
+        static::set($name, function ($value = null): bool {
           if (!is_string($value)) {
             throw new IncompatibleTypeError($value, 'incompatible with string');
           }
-        };
+
+          return true;
+        });
       break;
 
       case 'int':
-        static::$registry[$name] = function ($value) {
+        static::set($name, function ($value = null): bool {
           if (!is_int($value)) {
             throw new IncompatibleTypeError($value, 'incompatible with int');
           }
-        };
+
+          return true;
+        });
       break;
 
       case 'float':
-        static::$registry[$name] = function ($value) {
+        static::set($name, function ($value = null): bool {
           if (!is_float($value)) {
             throw new IncompatibleTypeError($value, 'incompatible with float');
           }
-        };
+
+          return true;
+        });
       break;
 
       case 'bool':
-        static::$registry[$name] = function ($value) {
+        static::set($name, function ($value = null): bool {
           if (!is_bool($value)) {
             throw new IncompatibleTypeError($value, 'incompatible with bool');
           }
-        };
+
+          return true;
+        });
       break;
 
       case 'boolean':
-        static::$registry[$name] = function ($value) {
+        static::set($name, function ($value = null): bool {
           if (!is_bool($value)) {
             throw new IncompatibleTypeError($value, 'incompatible with bool');
           }
-        };
+
+          return true;
+        });
       break;
 
       case 'array':
-        static::$registry[$name] = function ($value) {
+        static::set($name, function ($value = null): bool {
           if (!is_array($value)) {
             throw new IncompatibleTypeError($value, 'incompatible with array');
           }
-        };
+
+          return true;
+        });
       break;
 
       case 'object':
-        static::$registry[$name] = function ($value) {
+        static::set($name, function ($value = null): bool {
           if (!is_object($value)) {
             throw new IncompatibleTypeError($value, 'incompatible with object');
           }
-        };
+
+          return true;
+        });
       break;
     }
 
@@ -203,9 +225,13 @@ final class Type implements TypeInterface {
   }
 
   /**
-   * Retrieves an already registered type
+   * Retrieves an already registered type by it's name, literal validators
+   * or tries by parsing annotations.
    *
-   * @param string $name Type name alias to retireve
+   * Even though this method can parse annotation, it's much more efficient to
+   * use {@see Type::set()} directly.
+   *
+   * @param string $name Type name alias or type annotation to retireve
    * @return \Closure
    */
   public static function get(string $name): \Closure {
@@ -217,9 +243,8 @@ final class Type implements TypeInterface {
 
     if (is_callable($name)) {
       $type = type::wrap($name);
-      static::set($name, $type);
 
-      return static::$registry[$name];
+      return static::set($name, $type);
     }
 
     // Exact string value
@@ -263,6 +288,15 @@ final class Type implements TypeInterface {
       };
     }
 
+    // Maybe a type annotation:
+    try {
+      $type = Annotation::compile(Annotation::parse($name));
+
+      return Type::set($name, $type);
+    } catch (\Throwable $th) {
+      throw new \Exception("Type does not exist: `${name}`", ErrorCodes::NOT_FOUND, $th);
+    }
+
     throw new \Exception("Type does not exist: `${name}`", ErrorCodes::NOT_FOUND);
   }
 
@@ -274,11 +308,11 @@ final class Type implements TypeInterface {
    * @param callable|string $type Validation \Closure, callable to
    *                              {@see self::wrap()}, type name alias or
    *                              Flow annotation.
-   * @return void
+   * @return \Closure
    *
    * @see https://flow.org/en/docs/types/ Flow Type Annotations for refference
    */
-  public static function set(string $name, $type): void {
+  public static function set(string $name, $type): \Closure {
     if ($name === 'any') {
       throw new \Exception("Using `any` is unsafe and should be avoided whenever possible", ErrorCodes::FORBIDDEN);
     }
@@ -287,7 +321,11 @@ final class Type implements TypeInterface {
       $reflection = new \ReflectionFunction($type);
 
       if ($reflection->getNumberOfParameters() !== 1) {
-        throw new \Exception("Expectin validator funciton/closure with one parameter", ErrorCodes::METHOD_NOT_ALLOWED);
+        throw new \Exception("Expecting ${name} validator function/closure with one parameter", ErrorCodes::METHOD_NOT_ALLOWED);
+      }
+
+      if (Utils::getReturnType($reflection) !== 'bool') {
+        throw new \Exception("Expecting ${name} validator function/closure to return bool", ErrorCodes::METHOD_NOT_ALLOWED);
       }
 
       if (is_string($type)) {
@@ -302,8 +340,18 @@ final class Type implements TypeInterface {
         );
       }
 
-      static::$registry[$name] = static::get($type);
+      $type = static::get($type);
+      $reflection = new \ReflectionFunction($type);
+
+      if (Utils::getReturnType($reflection) !== 'bool') {
+        var_dump($type);
+        throw new \Exception("Expecting ${name} validator function/closure to return bool", ErrorCodes::METHOD_NOT_ALLOWED);
+      }
+
+      static::$registry[$name] = $type;
     }
+
+    return static::get($name);
   }
 
   /**
@@ -328,15 +376,16 @@ final class Type implements TypeInterface {
       : preg_replace('/^is_/', '', (new \ReflectionFunction($function))->getName());
 
     if ($shouldThrow) {
-      $returnType = Utils::getReturnType($shouldThrow);
+      $reflection = new \ReflectionFunction($shouldThrow);
+      $returnType = Utils::getReturnType($reflection);
 
       if ($returnType !== 'bool') {
         throw new \Exception("`\$shouldThrow` closure must define return type as bool.", ErrorCodes::METHOD_NOT_ALLOWED);
       }
     }
 
-    return function ($value = null) use ($function, $type, $shouldThrow) {
-      $result = call_user_func($function, $value);
+    return function ($value = null) use ($function, $type, $shouldThrow): bool {
+      $result = !!call_user_func($function, $value);
 
       $throw = $shouldThrow
         ? $shouldThrow($result)
@@ -345,15 +394,19 @@ final class Type implements TypeInterface {
       if ($throw === Type::SHOULD_THROW) {
         throw new IncompatibleTypeError($value, 'incompatible with '.$type);
       }
+
+      return $result;
     };
   }
 
   /**
    * Assertion to test if the type validation fails
    *
+   * Returns IncompatibleTypeError for further investigation.
+   *
    * @param string $message Message to compare to
    * @param callable $test Callable test to invoke
-   * @return mixed
+   * @return \IncompatibleTypeError
    */
   public static function shouldThrowIncompatibleTypeError(string $message, callable $test) {
     try {
