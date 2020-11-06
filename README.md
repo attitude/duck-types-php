@@ -1,7 +1,7 @@
 Duck Types for PHP
 ==================
 
-If it walks like a duck and talks like a duck, treat it like a duck, even if it’s not — a dynamic typing for PHP inspired by [Flow](https://flow.org/en/) types.
+If it walks like a duck and talks like a duck, treat it like a duck, even if it’s not a duck — a dynamic typing for PHP inspired by [Flow](https://flow.org/en/) types.
 
 This tool let's you use basic [FLow annotation syntax](https://flow.org/en/docs/types/) to check data flowing through it. It can generate validation [\Closures](https://www.php.net/manual/en/class.closure) (validator) from a Flow annotation.
 
@@ -10,9 +10,31 @@ Jump to:
 - [Using a reusable type](#using-a-reusable-type)
 - [Validator \Closures](#validator-closures)
 - [Public API](#api)
+- [Installation](#installation)
+
+TODO:
+
+- [ ] Add support for [`$Exact<T>` utility type](https://flow.org/en/docs/types/utilities/#toc-exact)
+- [ ] Publish asserts for at least some cases
 
 ---
 ---
+---
+
+## About
+
+This project is an **experiment turned into a dev-tool**. It is meant to be used during the development and should not be be used in production, so make sure to disable the *duck* validations in production using constant:
+
+```php
+define('DUCK_TYPE_VAlIDATION_IS_ENABLED', false);
+```
+
+After disabling the validation, value **just flows through** the `Type::pass()` method.
+
+You're not even bound to use the "pass" variable method. It's here to serve as an inspiration and you are encouraged to use your own way how to use this library.
+
+You can just use the `Annotation` methods to `parse()` (some) Flow logic syntax, or use the `compile()` method to generate \Closure validators.
+
 ---
 
 Supported Flow annotations
@@ -189,10 +211,10 @@ API
 ### *final class* `IncompatibleTypeError`
 
 > Incompatible type error class
-> 
+>
 > Extends default 'TypeError class. Throw this in custom validation \Closure
 > validators.
-> 
+>
 > This class is final. Use composition instead of inheritance.
 >
 > — function **__construct**(**$given**, `string` **$unexpected**, **$previous** = *null*): `IncompatibleTypeError`;
@@ -208,4 +230,61 @@ API
 
 ---
 
-Made with love to code by [Martin Adamko](https://github.com/attitude)
+## Installation
+
+Use one of these 3 options:
+
+#### A/ [Download the latest zip](https://github.com/attitude/duck-types-php/archive/main.zip)
+
+#### B/ Clone with Git
+
+```bash
+$ git clone git@github.com:attitude/duck-types-php.git /your/destination/path
+```
+
+#### C/ Using [Composer](https://getcomposer.org)
+
+1. Add this to your `composer.json`:
+  ```json
+  {
+    "repositories": [
+    {
+        "type": "vcs",
+        "url": "https://github.com/attitude/duck-types-php"
+    }],
+    "require": {
+      "attitude/duck-types-php": "dev-main"
+    }
+  }
+  ```
+2. Run
+   ```
+   $ composer install
+   ```
+3. In your code add:
+
+   You will need to require all the files of the librery manuall in case
+   you're using Composer, otherwise you can use autoload feature:
+
+   ```php
+   <?php
+   // When using Composer:
+   require_once "vendor/autoload.php"
+
+   use Duck\Types\Type;
+
+   // Register 'hello' string literal type,
+   // note the double string quotes:
+   Type::set('hello', '"hello"');
+
+   // Use the registered type
+   $world = Type::pass('world', 'hello'); // This fails
+   $world = Type::pass('world', 'world'); // This works
+
+   ```
+
+✨ ✨ ✨
+
+---
+
+Made with ❤️ to code by [Martin Adamko](https://github.com/attitude)

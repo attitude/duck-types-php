@@ -1,0 +1,20 @@
+{
+    "name": "attitude/duck-types-php",
+    "description": "If it walks like a duck and talks like a duck, treat it like a duck, even if it’s not — a dynamic typing for PHP inspired by Flow types.",
+    "type": "dev-library",
+    "require": {
+        "php": "^7.3.5"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Martin Adamko",
+            "email": "martinadamko.sk@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Duck\\Types\\": "src/"
+        }
+    }
+}
