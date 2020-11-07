@@ -43,7 +43,6 @@ Supported Flow annotations
 --------------------------
 
 - Primitive types relevant to PHP
-   - \* *(exists)*
    - `null`
    - `undefined`
    - `number`
@@ -55,13 +54,16 @@ Supported Flow annotations
    - `boolean`
    - `array`
    - `object`
- - Literal types
- - Maybe types
- - Object types
- - Array types
- - Typle types
- - Union types
- - Intersection types
+   - \* *(exists)*
+ - Literal types for `string`, `int` and `float`
+ - Maybe types marked with `?` sign, e.g. `?bool`
+ - Object types, e.g. `{ hello: 'world' }`
+ - Exact object type, e.g.` {| hello: 'world' |}`
+ - Array types, e.g. `string[]`
+ - Tuple types, e.g. `[number, string, 'three']`
+ - Union types, e.g. `int | float | string`
+ - Intersection types, e.g. `{ a: int } & {b : float }`
+ - Grouping with parentheses, e.g. `(int | string)[]`
 
 ---
 
