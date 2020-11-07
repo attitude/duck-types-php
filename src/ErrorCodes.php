@@ -3,14 +3,13 @@
 namespace Duck\Types;
 
 /**
- * Error codes constatns
+ * Error codes constants
  *
  * - 4XX - Errors are recoverable by changing client program
  * - 5XX - Errors usually require change of the library
  *
  */
 final class ErrorCodes {
-
   /**
    * Refused action. This may be due to missing necessary permissions
    */

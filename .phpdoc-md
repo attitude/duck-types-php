@@ -1,0 +1,14 @@
+<?php
+
+return (object)[
+    'rootNamespace' => 'Duck\Types',
+    'destDirectory' => 'docs',
+    'format' => 'github',
+    'classes' => [
+        '\Duck\Types\Annotation',
+        '\Duck\Types\ErrorCodes',
+        '\Duck\Types\Registry',
+        '\Duck\Types\Type',
+        '\Duck\Types\Utils'
+    ],
+];

@@ -16,5 +16,17 @@
         "psr-4": {
             "Duck\\Types\\": "src/"
         }
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/attitude/phpdoc-md"
+        }
+    ],
+    "require-dev": {
+        "clean/phpdoc-md": "^0.20.0"
+    },
+    "scripts": {
+        "docs": "./vendor/bin/phpdoc-md"
     }
 }

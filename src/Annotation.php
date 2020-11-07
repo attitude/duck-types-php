@@ -5,30 +5,30 @@ namespace Duck\Types;
 /**
  * Class to support Flow annotations
  *
- * - {@see Annotation::parse()} - Parses Flow annotation into AST-like tree.
- * - {@see Annotation::compile()} - Compiles AST-like tree into validator \Closure
- *
- * Supported annotations:
+ * ## Supported Flow annotations:
  *
  * - Primitive types relevant to PHP
- *   - * (exists)
- *   - null
- *   - undefined
- *   - number
- *   - string
- *   - int
- *   - float
- *   - bool
- *   - boolean
- *   - array
- *   - object
- * - Literal types
- * - Maybe types
- * - Object types
- * - Array types
- * - Typle types
- * - Union types
- * - Intersection types
+ *   - `null`
+ *   - `undefined`
+ *   - `number`
+ *   - `numeric`
+ *   - `string`
+ *   - `int`
+ *   - `float`
+ *   - `bool`
+ *   - `boolean`
+ *   - `array`
+ *   - `object`
+ *   - \* *(exists)*
+ * - Literal types for `string`, `int` and `float`
+ * - Maybe types marked with `?` sign, e.g. `?bool`
+ * - Object types, e.g. `{ hello: 'world' }`
+ * - Exact object type, e.g.` {| hello: 'world' |}`
+ * - Array types, e.g. `string[]`
+ * - Tuple types, e.g. `[number, string, 'three']`
+ * - Union types, e.g. `int | float | string`
+ * - Intersection types, e.g. `{ a: int } & {b : float }`
+ * - Grouping with parentheses, e.g. `(int | string)[]`
  *
  * Type aliases are supported by using {@see Types::set()} method that can
  * registers any alias of compiled validator or any \Closure validator.
@@ -475,7 +475,7 @@ final class Annotation implements AnnotationInterface {
         if (is_array($type)) {
           $type = static::compile($type);
         } else {
-          $type = Type::get($type);
+          $type = Registry::get($type);
         }
       }
     } elseif ($expression === Annotation::SHAPE_ANNOTATION) {
@@ -489,7 +489,7 @@ final class Annotation implements AnnotationInterface {
         if (is_array($type)) {
           $type = static::compile($type);
         } else {
-          $type = Type::get($type);
+          $type = Registry::get($type);
         }
       }
 
@@ -501,7 +501,7 @@ final class Annotation implements AnnotationInterface {
             if (is_array($indexer->key)) {
               $indexer->key = static::compile($indexer->key);
             } else {
-              $indexer->key = Type::get($indexer->key);
+              $indexer->key = Registry::get($indexer->key);
             }
           }
         }
@@ -510,7 +510,7 @@ final class Annotation implements AnnotationInterface {
           if (is_array($indexer->value)) {
             $indexer->value = static::compile($indexer->value);
           } else {
-            $indexer->value = Type::get($indexer->value);
+            $indexer->value = Registry::get($indexer->value);
           }
         }
       }
@@ -523,7 +523,7 @@ final class Annotation implements AnnotationInterface {
         if (is_array($type)) {
           $type = static::compile($type);
         } else {
-          $type = Type::get($type);
+          $type = Registry::get($type);
         }
       }
     }
@@ -695,8 +695,8 @@ final class Annotation implements AnnotationInterface {
               return null;
             }, array_keys($shape)));
 
-            $missingKeys = missing_array_values($valueKeys, $shapeKeys);
-            $missingKeys = missing_array_values($optionalKeys, $missingKeys);
+            $missingKeys = Utils::missingArrayValues($valueKeys, $shapeKeys);
+            $missingKeys = Utils::missingArrayValues($optionalKeys, $missingKeys);
 
             foreach ($missingKeys as $missingKey) {
               $errors[$missingKey] = new IncompatibleTypeError(

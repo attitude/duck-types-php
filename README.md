@@ -5,13 +5,32 @@ If it walks like a duck and talks like a duck, treat it like a duck, even if it�
 
 This tool let's you use basic [FLow annotation syntax](https://flow.org/en/docs/types/) to check data flowing through it. It can generate validation [\Closures](https://www.php.net/manual/en/class.closure) (validator) from a Flow annotation.
 
+```php
+<?php
+
+use Duck\Types\Type;
+
+// NULL is compatible with nullable boolean
+assert(Type::is('?bool', null));
+
+// Assertion failed because NULL is incompatible with string
+assert(Type::is('string', null));
+
+// Passing 'default string value' compatible with string
+$variable = Type::pass(null, 'string', 'default string value');
+
+// Cannot pass NULL because NULL is incompatible with string
+$variable = Type::pass(null, 'string');
+
+```
+
 Jump to:
-- [Supported *Flow* annotations](#supported-flow-annotations)
-- [Using a reusable type](#using-a-reusable-type)
+- [Supported *Flow* annotations](docs/Annotation.md#supported-flow-annotations)
+- [Creating a custom reusable type](#creating-a-custom-reusable-type)
 - [Usage with PHP 7 expectations](#usage-with-php-7-expectations)
 - [Validator \Closures](#validator-closures)
-- [Public API](#api)
 - [Installation](#installation)
+- [Public API](https://github.com/attitude/duck-types-php/blob/main/docs/README.md)
 
 TODO:
 
@@ -39,36 +58,8 @@ You can just use the `Annotation` methods to `parse()` (some) Flow logic syntax,
 
 ---
 
-Supported Flow annotations
---------------------------
-
-- Primitive types relevant to PHP
-   - `null`
-   - `undefined`
-   - `number`
-   - `numeric`
-   - `string`
-   - `int`
-   - `float`
-   - `bool`
-   - `boolean`
-   - `array`
-   - `object`
-   - \* *(exists)*
- - Literal types for `string`, `int` and `float`
- - Maybe types marked with `?` sign, e.g. `?bool`
- - Object types, e.g. `{ hello: 'world' }`
- - Exact object type, e.g.` {| hello: 'world' |}`
- - Array types, e.g. `string[]`
- - Tuple types, e.g. `[number, string, 'three']`
- - Union types, e.g. `int | float | string`
- - Intersection types, e.g. `{ a: int } & {b : float }`
- - Grouping with parentheses, e.g. `(int | string)[]`
-
----
-
-Using a reusable type
----------------------
+Creating a custom reusable type
+-------------------------------
 
 By registering a type alias you can make it awailable to the type system for later reuse.
 
@@ -82,43 +73,60 @@ A registered type can be later
 use Duck\Types\Type;
 use Duck\Types\IncompatibleTypeError;
 
-Type::set('nonNegativeNumber', function ($value = null): bool {
+// Set new type into the type registry:
+Type::for('nonNegativeNumber', function ($value = null): bool {
   if (!isset($value) || !(is_float($value) || is_int($value)) || $value < 0) {
     throw new IncompatibleTypeError( $value, 'not a non-negative number');
   }
+
+  return true;
 });
 
-Type::set('largerThan100', function ($value = null): bool {
+// Set new type into the type registry:
+Type::for('largerThan100', function ($value = null): bool {
   if ($value <= 100) {
     throw new IncompatibleTypeError( $value, 'not larger than 100');
   }
+
+  return true;
 });
 
-Type::shouldThrowIncompatibleTypeError('Cannot pass integer literal 10 because integer literal 10 is incompatible with nonNegativeNumber & largerThan100', function () {
-  $price = 10;
-  $number = Type::pass($price, 'nonNegativeNumber & largerThan100');
-  // Issues:
-  // - integer literal 10 is not larger than 100
-});
+Type::shouldThrow(
+  'Cannot pass integer literal 10 because integer literal 10 is incompatible with nonNegativeNumber & largerThan100',
+  function () {
+    $number = Type::pass(10, 'nonNegativeNumber & largerThan100');
+    // Issues:
+    // - integer literal 10 is not larger than 100
+  }
+);
 
-// You can even register a new intersection type::
-Type::set('largerThan100Number', 'nonNegativeNumber & largerThan100');
+// You can even register a new alias for the intersection reusing
+// previously registered types:
+Type::for('largerThan100Number', 'nonNegativeNumber & largerThan100');
 
-// This passes:
-$number = Type::pass(101, 'largerThan100Number');
+// And use the new alias:
+$number = Type::pass(101, 'largerThan100Number'); // Passes OK
 
-// You can even make it nullable and also to pass a default value:
-$number = Type::pass(null, '?largerThan100Number', 199.99);
+// You can even use it with a nullable sign:
+$number = Type::pass(null, '?largerThan100Number'); // Passes OK
 
-// Default values are checked against the type too.
-Type::shouldThrowIncompatibleTypeError('Default value is incompatible with ?largerThan100Number', function() {
-  $number = Type::pass(null, '?largerThan100Number', 99.99);
-  // Issues:
-  // - double literal 99.989999999999995 is incompatible with null
-  // - double literal 99.989999999999995 is not larger than 100
-});
+// And alo pass a default value:
+$number = Type::pass(null, '?largerThan100Number', 199.99); // Passes OK
+
+// Default values are checked against the type too:
+Type::shouldThrow(
+  'Default value is incompatible with ?largerThan100Number',
+  function() {
+    $number = Type::pass(null, '?largerThan100Number', 99.99);
+    // Issues:
+    // - double literal 99.989999999999995 is incompatible with null
+    // - double literal 99.989999999999995 is not larger than 100
+  }
+);
 
 ```
+
+---
 
 ## Usage with PHP 7 expectations
 
@@ -135,10 +143,10 @@ An expression can be a function call, so let's use that:
 
 // Assert failed validation of type `?bool` example:
 
-$error = Type::shouldThrowIncompatibleTypeError(
+$error = Type::shouldThrow(
   'integer literal 1 is incompatible with union',
   function () {
-    assert((Type::get('?bool'))(1));
+    assert(Type::is('?bool', 1);
     // Fails with 2 errors:
     // - integer literal 1 is incompatible with null
     // - integer literal 1 is incompatible with bool
@@ -170,103 +178,11 @@ $nonNegativeNumber = function ($value = null): bool {
   if (!isset($value) || !(is_float($value) || is_int($value)) || $value < 0) {
     throw new IncompatibleTypeError( $value, 'not a non-negative number');
   }
+
+  //Always return bool to comply with assert()
+  return true;
 };
 ```
-
----
-
-API
----
-
-*namespace* `Duck\Types`;
-
-### *final class* `Annotation`
-
-— *static* function **parse**(`string` **$annotation**): `array`;\
-> Parse [supported *Flow* annotations](#supported-annotations) into AST-like tree
->   that can be used in `Annotation::compile()` later
-> - `string` **$annotation** — Flow annotation
-> - `array` **AST** —-like tree
->
-— *static* function **compile**(`array` **$tree**): `\Closure`;\
-> Compiles AST-like tree into validator \Closure
-> - `array` **$tree** — AST-like tree genereated with `Annotation::parse()`
-
-### *final class* `Type`
-
-— *static* function **pass**(**$value** = *null*, **$type**, **$default** = *null*): `mixed`;
->
-> Passes `$value` through if it is compatible with the $type otherwise throws
-> a new `IncompatibleTypeError`.
->
-> Can also check the `$default` value.
->
-> Set `DUCK_TYPE_VAlIDATION_IS_ENABLED` constant to `false` to entirelly skip
-> validation, e.g. in production environment.
->
-> - `mixed` **$value** — Value to pass through (and to validate)
-> - `string|\Closure` **$type** — Annotation or validation \Closure
-> - `mixed` **$default** — Optional value to pass if the `$value` is not set
->
-— *static* function **set**(string **$name**, **$validator**): void;
->
-> Registers a new type
->
-> - `string` **$name** — New type name (alias) to register that can be later
->   retrieved by calling {@see self::get()}
-> - `callable|string` **$type** — Validation \Closure, callable to Type::wrap(),
->   type name alias or Flow annotation.
->
-— *static* function **get**(`string` **$name**): `\Closure`;
->
-> Retrieves an already registered type by it's name, literal validators
-> or tries by parsing annotations.
->
-> Even though this method can parse annotation, it's much more efficient to
-> use `Type::set()` directly.
->
-> - `string` **$name** — Type name alias or type annotation to retireve
->
-— *static* function **wrap**(callable **$function**, `string` **$type** = *null*): \Closure;
->
-> Wraps existing callable and throws according to result
->
-> `$shouldThrow` \Closure must return a `boolean`. Default is to throw when
-> the return value of the `$callable` is `false` or when it is not set to
-> handle built-in functions like [is_int()](https://www.php.net/manual/en/function.is-int) or [is_string()](https://www.php.net/manual/en/function.is-string).
->
-> - `callable` **$function** — A function to wrap in \Closure string|null $type Name to use in \Throwable message callable|null $shouldThrow Resolves whether to throw according to result value of $callable.
-> - `string|null` **$type** — Name to use in \Throwable message
-> - `callable|null` **$shouldThrow** — Resolves whether to throw according to the result value of $callable.
->
-— *static* function **shouldThrowIncompatibleTypeError**(`string` **$message**, `callable` **$test**): `IncompatibleTypeError`;
->
-> Assertion to test if the type validation fails
->
-> Returns IncompatibleTypeError for further investigation.
->
-> - `string` **$message** — Message to compare to
-> - `callable` **$test** — Callable test to invoke
-
-### *final class* `IncompatibleTypeError`
-
-> Incompatible type error class
->
-> Extends default 'TypeError class. Throw this in custom validation \Closure
-> validators.
->
-> This class is final. Use composition instead of inheritance.
->
-— function **__construct**(**$given**, `string` **$unexpected**, **$previous** = *null*): `IncompatibleTypeError`;
->
-> Class constructor
->
-> - `mixed` **$given** — Tested value of escaped string, e.g. object property
-> - `string` **$unexpected** — Unexpected condition met, e.g. `'not integer'`
->
-— function **getMessages**(string $path = ''): `string | string[]`;
->
-> Retrieves all error messages
 
 ---
 

@@ -41,60 +41,25 @@ class Utils {
   }
 
   /**
-   * Factory that evaluates all \Closure apssed as erguments
+   * Asserts valid type
    *
-   * \TypeError will be thrown if any of the tests fails.
-   *
-   * @param \Closure ...$conditions
-   * @return \Closure
+   * @param callable $callable
+   * @param string $name
+   * @return void
    */
-  public static function all(\Closure ...$conditions): \Closure {
-    return function($value = null) use ($conditions) {
-      $errors = [];
+  public static function assertCallable(callable $callable, string $name = '[anonymous]') {
+    $reflection = new \ReflectionFunction($callable);
 
-      foreach ($conditions as $condition) {
-        try {
-          $condition($value);
-        } catch (\Throwable $th) {
-          $errors[] = $th->getMessage();
-        }
-      }
+    if ($reflection->getNumberOfParameters() !== 1) {
+      throw new \Exception("Expecting ${name} to be a function/closure with one parameter", ErrorCodes::METHOD_NOT_ALLOWED);
+    }
 
-      if (count($errors) === 1) {
-        throw new \TypeError(''.implode('', $errors));
-      }
-
-      throw new \TypeError('['.implode(' and ', $errors).'] to pass');
-    };
+    if (Utils::getReturnType($reflection) !== 'bool') {
+      throw new \Exception("Expecting ${name} to be a function/closure to return bool", ErrorCodes::METHOD_NOT_ALLOWED);
+    }
   }
 
-  /**
-   * Factory that evaluates any \Closure apssed as erguments
-   *
-   * \TypeError will be thrown only if all of the tests fail.
-   *
-   * @param \Closure ...$conditions
-   * @return \Closure
-   */
-  public static function any(\Closure ...$conditions): \Closure {
-    return function($value = null) use ($conditions) {
-      $errors = [];
-
-      foreach ($conditions as $condition) {
-        try {
-          $condition($value);
-
-          return;
-        } catch (\Throwable $th) {
-          $errors[] = $th->getMessage();
-        }
-      }
-
-      if (count($errors) === 1) {
-        throw new \TypeError(implode('', $errors));
-      }
-
-      throw new \TypeError('one of ['.implode(' or ', $errors).'] to pass.');
-    };
+  public static function missingArrayValues(array $haystack, array $expected) {
+    return array_diff($expected, $haystack);
   }
 }

@@ -2,165 +2,49 @@
 
 namespace Duck\Types;
 
+use Error;
+use TypeError;
+
 final class Type implements TypeInterface {
-  /** Should thow */
+  /** Alias of `true` */
   const SHOULD_THROW = true;
 
-  private static $registry = [];
-
   /**
-   * Registers a primitive type validator
+   * Get or set type \Closure
    *
-   * When name matches default validator a warning notice is triggered once.
-   *
-   * Define `DUCK_TYPE_WARN_ABOUT_DEFAULT_VALIDATORS` constant and set it to
-   * `false` to hide warning notice.
-   *
-   * @param string $name Built-in validator to register
-   * @return void
-   *
-   * @see https://flow.org/en/docs/types/primitives/
-   *
+   * @param string|\Closure $type Type annotation or \Closure
+   * @return \Closure
    */
-  protected static function default(string $name): void {
-    static $warnOnce;
+  public static function for(string $name, $type = null): \Closure {
+    // Getter
+    if (!isset($type)) {
+      if (Registry::exists($name)) {
+        return Registry::get($name, $type);
+      }
 
-    if (isset(static::$registry[$name])) {
-      return;
+      return Registry::set($name, Annotation::compile(Annotation::parse($name)));
     }
 
-    switch ($name) {
-      // Existential type only to check whether value is set. Use with caution
-      case '*':
-        static::set($name, function ($value = null): bool {
-          if (!isset($value)) {
-            throw new IncompatibleTypeError($value, 'incompatible with existential');
-          }
+    // Setter
+    if (is_callable($type)) {
+      Utils::assertCallable($type, "second function argument `\$type` when setting `${name}`");
 
-          return true;
-        });
-      break;
-
-      case 'null':
-        static::set($name, function ($value = null): bool {
-          if ($value !== null) {
-            throw new IncompatibleTypeError($value, 'incompatible with null');
-          }
-
-          return true;
-        });
-      break;
-
-      case 'undefined':
-        static::set($name, function ($value = null): bool {
-          if (isset($value)) {
-            throw new IncompatibleTypeError($value, 'incompatible with undefined');
-          }
-
-          return true;
-        });
-      break;
-
-      case 'number':
-        static::set($name, function ($value = null): bool {
-          if (is_int($value) || is_float($value) || is_double($value)) {
-            return true;
-          }
-
-          throw new IncompatibleTypeError($value, 'incompatible with number');
-        });
-      break;
-
-      case 'numeric':
-        static::set($name, function ($value = null): bool {
-          if (!is_numeric($value)) {
-            throw new IncompatibleTypeError($value, 'incompatible with numeric');
-          }
-
-          return true;
-        });
-      break;
-
-      case 'string':
-        static::set($name, function ($value = null): bool {
-          if (!is_string($value)) {
-            throw new IncompatibleTypeError($value, 'incompatible with string');
-          }
-
-          return true;
-        });
-      break;
-
-      case 'int':
-        static::set($name, function ($value = null): bool {
-          if (!is_int($value)) {
-            throw new IncompatibleTypeError($value, 'incompatible with int');
-          }
-
-          return true;
-        });
-      break;
-
-      case 'float':
-        static::set($name, function ($value = null): bool {
-          if (!is_float($value)) {
-            throw new IncompatibleTypeError($value, 'incompatible with float');
-          }
-
-          return true;
-        });
-      break;
-
-      case 'bool':
-        static::set($name, function ($value = null): bool {
-          if (!is_bool($value)) {
-            throw new IncompatibleTypeError($value, 'incompatible with bool');
-          }
-
-          return true;
-        });
-      break;
-
-      case 'boolean':
-        static::set($name, function ($value = null): bool {
-          if (!is_bool($value)) {
-            throw new IncompatibleTypeError($value, 'incompatible with bool');
-          }
-
-          return true;
-        });
-      break;
-
-      case 'array':
-        static::set($name, function ($value = null): bool {
-          if (!is_array($value)) {
-            throw new IncompatibleTypeError($value, 'incompatible with array');
-          }
-
-          return true;
-        });
-      break;
-
-      case 'object':
-        static::set($name, function ($value = null): bool {
-          if (!is_object($value)) {
-            throw new IncompatibleTypeError($value, 'incompatible with object');
-          }
-
-          return true;
-        });
-      break;
+      return Registry::set($name, is_string($type)
+        ? Type::wrap($type)
+        : $type
+      );
     }
 
-    if ($warnOnce || Utils::const('DUCK_TYPE_WARN_ABOUT_DEFAULT_VALIDATORS', true) === false) {
-      return;
+    if (is_string($type)) {
+      return Registry::set(
+        $name,
+        Registry::exists($type)
+          ? Registry::get($type)
+          : Annotation::compile(Annotation::parse($type))
+      );
     }
 
-    if (isset(static::$registry[$name])) {
-      trigger_error("Using default type validator for `${name}` type");
-    }
-
-    $warnOnce = true;
+    throw new \Exception("Unsupported type of `${type}` parameter supplied. Expecting annotation string, or callable", ErrorCodes::FORBIDDEN);
   }
 
   /**
@@ -170,10 +54,10 @@ final class Type implements TypeInterface {
    * Can also check the `$default` value.
    *
    * Set `DUCK_TYPE_VAlIDATION_IS_ENABLED` constant to `false` to entirelly skip
-   * validation, e.g. in production environment.
+   * type checking, e.g. in production environment.
    *
    * @param mixed $value Value to pass through (and to validate)
-   * @param string|\Closure $type Annotation or validation \Closure
+   * @param string|\Closure $type Annotation or type validation \Closure
    * @param mixed $default ptional value to pass if the `$value` is not set
    */
   public static function pass($value = null, $type, $default = null) {
@@ -181,13 +65,8 @@ final class Type implements TypeInterface {
       return isset($value) ? $value : $default;
     }
 
-    if ($type instanceof \Closure) {
-      $validator = $type;
-      $name = '[anonymous]';
-    } else {
-      $validator = Annotation::compile(Annotation::parse($type));
-      $name = $type;
-    }
+    $validator = Type::for($type);
+    $name = $type instanceof \Closure ? '[anonymous]' : $type;
 
     if (isset($default)) {
       try {
@@ -204,7 +83,7 @@ final class Type implements TypeInterface {
       }
     }
 
-    if (!isset($value)) {
+    if (isset($default) && !isset($value)) {
       return $default;
     }
 
@@ -225,133 +104,89 @@ final class Type implements TypeInterface {
   }
 
   /**
-   * Retrieves an already registered type by it's name, literal validators
-   * or tries by parsing annotations.
+   * Checks given value against the type
    *
-   * Even though this method can parse annotation, it's much more efficient to
-   * use {@see Type::set()} directly.
-   *
-   * @param string $name Type name alias or type annotation to retireve
-   * @return \Closure
+   * @param mixed $value Value to type check
+   * @param string|\Closure $type Annotation or type validation \Closure
+   * @return boolean
    */
-  public static function get(string $name): \Closure {
-    static::default($name);
-
-    if (isset(static::$registry[$name])) {
-      return static::$registry[$name];
+  public static function is($type, $value = null): bool {
+    if (Utils::const('DUCK_TYPE_VAlIDATION_IS_ENABLED', true) === false) {
+      return true;
     }
 
-    if (is_callable($name)) {
-      $type = type::wrap($name);
-
-      return static::set($name, $type);
-    }
-
-    // Exact string value
-    $maybeStartQuote = $name[0];
-    $maybeEndtQuote = substr($name, -1);
-
-    if (
-      ($maybeStartQuote === '"' || $maybeStartQuote === "'") &&
-      ($maybeEndtQuote === '"' || $maybeEndtQuote === "'") &&
-      $maybeStartQuote === $maybeEndtQuote
-    ) {
-      return function ($value) use ($name) {
-        $string = substr($name, 1, -1);
-
-        if ($value !== $string) {
-          throw new IncompatibleTypeError($value, "incompatible with string literal ${name}");
-        }
-      };
-    }
-
-    // Exact int number
-    if (preg_match('/^\d+$/', $name)) {
-      return function ($value) use ($name) {
-        $int = (int) $name;
-
-        if ($value !== $int) {
-          throw new IncompatibleTypeError($value, "incompatible with int literal ${name}");
-        }
-      };
-    }
-
-    // Exact float number
-    if (preg_match('/^\d+\.\d+$/', $name)) {
-      return function ($value) use ($name) {
-        $float = (float) $name;
-
-
-        if ($value !== $float) {
-          throw new IncompatibleTypeError($value, "incompatible with float literal ${name}");
-        }
-      };
-    }
-
-    // Maybe a type annotation:
     try {
-      $type = Annotation::compile(Annotation::parse($name));
+      (Type::for($type))($value);
+    } catch (IncompatibleTypeError $th) {
+      // Local variable that should be visible in trace
+      $errors = $th->getMessages();
 
-      return Type::set($name, $type);
-    } catch (\Throwable $th) {
-      throw new \Exception("Type does not exist: `${name}`", ErrorCodes::NOT_FOUND, $th);
+      throw new IncompatibleTypeError(
+        "\\Assertion failed because ".IncompatibleTypeError::getttype($value),
+        "incompatible with ${type}",
+        $th
+      );
     }
 
-    throw new \Exception("Type does not exist: `${name}`", ErrorCodes::NOT_FOUND);
+    return true;
   }
 
   /**
-   * Registers a new type
+   * Factory that evaluates all \Closure apssed as erguments
    *
-   * @param string $name New type name (alias) to register that can be later
-   *                     retrieved by calling {@see self::get()}.
-   * @param callable|string $type Validation \Closure, callable to
-   *                              {@see self::wrap()}, type name alias or
-   *                              Flow annotation.
+   * \TypeError will be thrown if any of the tests fails.
+   *
+   * @param \Closure ...$conditions
    * @return \Closure
-   *
-   * @see https://flow.org/en/docs/types/ Flow Type Annotations for refference
    */
-  public static function set(string $name, $type): \Closure {
-    if ($name === 'any') {
-      throw new \Exception("Using `any` is unsafe and should be avoided whenever possible", ErrorCodes::FORBIDDEN);
-    }
+  public static function all(\Closure ...$conditions): \Closure {
+    return function($value = null) use ($conditions) {
+      $errors = [];
 
-    if (is_callable($type)) {
-      $reflection = new \ReflectionFunction($type);
-
-      if ($reflection->getNumberOfParameters() !== 1) {
-        throw new \Exception("Expecting ${name} validator function/closure with one parameter", ErrorCodes::METHOD_NOT_ALLOWED);
+      foreach ($conditions as $condition) {
+        try {
+          $condition($value);
+        } catch (\Throwable $th) {
+          $errors[] = $th->getMessage();
+        }
       }
 
-      if (Utils::getReturnType($reflection) !== 'bool') {
-        throw new \Exception("Expecting ${name} validator function/closure to return bool", ErrorCodes::METHOD_NOT_ALLOWED);
+      if (count($errors) === 1) {
+        throw new \TypeError(''.implode('', $errors));
       }
 
-      if (is_string($type)) {
-        static::$registry[$name] = static::wrap($type);
-      } else {
-        static::$registry[$name] = $type;
+      throw new \TypeError('['.implode(' and ', $errors).'] to pass');
+    };
+  }
+
+  /**
+   * Factory that evaluates any \Closure apssed as erguments
+   *
+   * \TypeError will be thrown only if all of the tests fail.
+   *
+   * @param \Closure ...$conditions
+   * @return \Closure
+   */
+  public static function any(\Closure ...$conditions): \Closure {
+    return function($value = null) use ($conditions) {
+      $errors = [];
+
+      foreach ($conditions as $condition) {
+        try {
+          $condition($value);
+
+          return;
+        } catch (\Throwable $th) {
+          $errors[] = $th->getMessage();
+        }
       }
-    } elseif (is_string($type)) {
-      if (!isset(static::$registry[$type])) {
-        static::$registry[$type] = Annotation::compile(
-          Annotation::parse($type)
-        );
+
+      if (count($errors) === 1) {
+        throw new \TypeError(implode('', $errors));
       }
 
-      $type = static::get($type);
-      $reflection = new \ReflectionFunction($type);
-
-      if (Utils::getReturnType($reflection) !== 'bool') {
-        var_dump($type);
-        throw new \Exception("Expecting ${name} validator function/closure to return bool", ErrorCodes::METHOD_NOT_ALLOWED);
-      }
-
-      static::$registry[$name] = $type;
-    }
-
-    return static::get($name);
+      throw new \TypeError('one of ['.implode(' or ', $errors).'] to pass.');
+    };
   }
 
   /**
@@ -376,12 +211,7 @@ final class Type implements TypeInterface {
       : preg_replace('/^is_/', '', (new \ReflectionFunction($function))->getName());
 
     if ($shouldThrow) {
-      $reflection = new \ReflectionFunction($shouldThrow);
-      $returnType = Utils::getReturnType($reflection);
-
-      if ($returnType !== 'bool') {
-        throw new \Exception("`\$shouldThrow` closure must define return type as bool.", ErrorCodes::METHOD_NOT_ALLOWED);
-      }
+      Utils::assertCallable($shouldThrow, 'third function argument `\$shouldThrow`');
     }
 
     return function ($value = null) use ($function, $type, $shouldThrow): bool {
@@ -400,7 +230,7 @@ final class Type implements TypeInterface {
   }
 
   /**
-   * Assertion to test if the type validation fails
+   * Assertion to test if the type check fails
    *
    * Returns IncompatibleTypeError for further investigation.
    *
@@ -408,7 +238,7 @@ final class Type implements TypeInterface {
    * @param callable $test Callable test to invoke
    * @return \IncompatibleTypeError
    */
-  public static function shouldThrowIncompatibleTypeError(string $message, callable $test) {
+  public static function shouldThrow(string $message, callable $test) {
     try {
       $test();
     } catch (IncompatibleTypeError $th) {
