@@ -331,8 +331,6 @@ final class Annotation implements AnnotationInterface {
       throw new \Exception('Any of `#@^$~` are reserved for notations.', ErrorCodes::CONFLICT);
     }
 
-    $key = hash('sha256', $annotation);
-
     // Object notations:
 
     // Hide optionality on keys
@@ -348,13 +346,10 @@ final class Annotation implements AnnotationInterface {
     $annotation = str_replace('{', '@(', $annotation);
     $annotation = str_replacE('}', ')', $annotation);
 
-    // Replace possible indexers
-    $annotation = str_replace('[string]:', 'string:', $annotation);
-    $annotation = str_replace('[number]:', 'number:', $annotation);
-    $annotation = str_replace('[int]:', 'int:', $annotation);
-    $annotation = str_replace('[float]:', 'float:', $annotation);
+    // Replace unnamed indexers
+    $annotation = preg_replace('/\[(.+)\]:/', '$1:', $annotation);
 
-    if (strstr($annotation, ']:')) {
+    if (preg_match('/\[.+?:.+?\]/', $annotation)) {
       // TODO: Maybe add feature later, e.g. when enumerations of strings are required
       throw new \Exception("Naming indexer is not supported", ErrorCodes::NOT_IMPLEMENTED);
     }
@@ -377,7 +372,7 @@ final class Annotation implements AnnotationInterface {
     $pointers = [];
     $pointer =& $tree;
 
-    while($word = array_shift($words)) {
+    while(null !== $word = array_shift($words)) {
       switch($word) {
         case '(':
           // Advance if already in progress
@@ -408,10 +403,7 @@ final class Annotation implements AnnotationInterface {
           array_pop($pointers);
         break;
 
-        // case '|':
-
         default:
-          // $pointer[$index].= $word;
           $pointer[$index] = $word;
           $index++;
         break;
@@ -459,6 +451,10 @@ final class Annotation implements AnnotationInterface {
    * @return \Closure
    */
   public static function compile(array $tree): \Closure {
+    if (!isset($tree[0])) {
+      throw new \Exception("Unexpected empty AST tree", ErrorCodes::CONFLICT);
+    }
+
     $expression = static::expression($tree[0]);
 
     if ($expression !== Annotation::UNION_ANNOTATION) {
@@ -469,7 +465,7 @@ final class Annotation implements AnnotationInterface {
       $tuple = &$tree[0];
 
       foreach ($tuple as &$type) {
-        if (empty($type)) {
+        if (empty($type) && $type != 0) {
           throw new \Exception("Annotation syntaxt error: Unexpected `()` or missing `,` while compiling type anotation", ErrorCodes::FORBIDDEN);
         }
 
@@ -483,7 +479,7 @@ final class Annotation implements AnnotationInterface {
       $shape = &$tree[0]['shape'];
 
       foreach ($shape as $key => &$type) {
-        if (empty($type)) {
+        if (empty($type) && $type != 0) {
           throw new \Exception("Annotation syntaxt error: Unexpected `()` or missing `,` while compiling type anotation", ErrorCodes::FORBIDDEN);
         }
 
@@ -517,7 +513,7 @@ final class Annotation implements AnnotationInterface {
       }
     } else {
       foreach ($tree as &$type) {
-        if (empty($type)) {
+        if (empty($type) && $type != 0) {
           throw new \Exception("Annotation syntaxt error: Unexpected `()` or missing `,` while compiling type anotation", ErrorCodes::FORBIDDEN);
         }
 

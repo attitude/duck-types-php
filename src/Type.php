@@ -10,7 +10,7 @@ final class Type implements TypeInterface {
   const SHOULD_THROW = true;
 
   /**
-   * Get or set type \Closure
+   * Get or set type with annotation or \Closure
    *
    * @param string|\Closure $type Type annotation or \Closure
    * @return \Closure
@@ -107,10 +107,10 @@ final class Type implements TypeInterface {
    * Checks given value against the type
    *
    * @param mixed $value Value to type check
-   * @param string|\Closure $type Annotation or type validation \Closure
+   * @param string $type Type annotation
    * @return boolean
    */
-  public static function is($type, $value = null): bool {
+  public static function is(string $type, $value = null): bool {
     if (Utils::const('DUCK_TYPE_VAlIDATION_IS_ENABLED', true) === false) {
       return true;
     }

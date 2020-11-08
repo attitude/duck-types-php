@@ -18,7 +18,7 @@ Duck\Types\TypeInterface
 |------|-------------|
 |[Type::all()](#typeall)|Factory that evaluates all \Closure apssed as erguments|
 |[Type::any()](#typeany)|Factory that evaluates any \Closure apssed as erguments|
-|[Type::for()](#typefor)|Get or set type \Closure|
+|[Type::for()](#typefor)|Get or set type with annotation or \Closure|
 |[Type::is()](#typeis)|Checks given value against the type|
 |[Type::pass()](#typepass)|Passes `$value` through if it is compatible with the $type otherwise throws a [new IncompatibleTypeError](https://github.com/attitude/duck-types-php/blob/main/docs/IncompatibleTypeError.md)|
 |[Type::shouldThrow()](#typeshouldthrow)|Assertion to test if the type check fails|
@@ -88,7 +88,7 @@ Factory that evaluates any \Closure apssed as erguments
 public static for (string|\Closure $type): \Closure
 ```
 
-Get or set type \Closure
+Get or set type with annotation or \Closure
 
 **Parameters**
 
@@ -110,7 +110,7 @@ Get or set type \Closure
 
 
 ```php
-public static is (mixed $value, string|\Closure $type): bool
+public static is (mixed $value, string $type): bool
 ```
 
 Checks given value against the type
@@ -118,7 +118,7 @@ Checks given value against the type
 **Parameters**
 
 * `(mixed) $value`: Value to type check
-* `(string|\Closure) $type`: Annotation or type validation \Closure
+* `(string) $type`: Type annotation
 
 
 **Return Values**
