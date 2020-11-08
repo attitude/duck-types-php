@@ -26,7 +26,8 @@ Class to support Flow annotations
 - Intersection types, e.g. `{ a: int } & {b : float }`
 - Grouping with parentheses, e.g. `(int | string)[]`
 
-Type aliases are supported by using {@see \Types::set()} method that can
+Type aliases are supported by using [Registry::set()](https://github.com/attitude/duck-types-php/blob/main/docs/Registry.md#registryset)
+method that can
 registers any alias of compiled validator or any \Closure validator.
 ## Implements:
 Duck\Types\AnnotationInterface
@@ -37,11 +38,11 @@ Duck\Types\AnnotationInterface
 
 | Name | Description |
 |------|-------------|
-|Annotation::UNION_ANNOTATION = :union-annotation:||
-|Annotation::INTERSECTION_ANNOTATION = :intersection-annotation:||
-|Annotation::SHAPE_ANNOTATION = :shape-annotation:||
-|Annotation::ARRAY_ANNOTATION = :array-annotation:||
-|Annotation::TUPLE_ANNOTATION = :tuple-annotation:||
+|Annotation::UNION_ANNOTATION = ":union-annotation:"||
+|Annotation::INTERSECTION_ANNOTATION = ":intersection-annotation:"||
+|Annotation::SHAPE_ANNOTATION = ":shape-annotation:"||
+|Annotation::ARRAY_ANNOTATION = ":array-annotation:"||
+|Annotation::TUPLE_ANNOTATION = ":tuple-annotation:"||
 
 ## Methods
 
@@ -68,8 +69,8 @@ Compiles AST-like tree into validator \Closure
 
 **Parameters**
 
-* `(array) $tree`
-: AST-like tree genereated with {@see \Annotation::parse()}
+* `(array) $tree`: AST-like tree genereated with {@see \Annotation::parse()}
+
 
 **Return Values**
 
@@ -93,8 +94,8 @@ Parses Flow annotation into AST-like tree
 
 **Parameters**
 
-* `(string) $annotation`
-: Flow annotation
+* `(string) $annotation`: Flow annotation
+
 
 **Return Values**
 

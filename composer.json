@@ -27,6 +27,6 @@
         "clean/phpdoc-md": "^0.20.0"
     },
     "scripts": {
-        "docs": "./vendor/bin/phpdoc-md"
+        "build-docs": "./vendor/bin/phpdoc-md"
     }
 }

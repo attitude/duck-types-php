@@ -49,7 +49,7 @@ final class Type implements TypeInterface {
 
   /**
    * Passes `$value` through if it is compatible with the $type otherwise throws
-   * a new {@see IncompatibleTypeError}
+   * a [new IncompatibleTypeError](https://github.com/attitude/duck-types-php/blob/main/docs/IncompatibleTypeError.md)
    *
    * Can also check the `$default` value.
    *

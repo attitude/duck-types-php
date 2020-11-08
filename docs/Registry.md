@@ -33,8 +33,8 @@ Checks if type exists in registry
 
 **Parameters**
 
-* `(string) $name`
-: Type name to check
+* `(string) $name`: Type name to check
+
 
 **Return Values**
 
@@ -58,8 +58,8 @@ Retrieves an already registered type by it's name, literal validators
 
 **Parameters**
 
-* `(string) $name`
-: Type name alias or type annotation to retireve
+* `(string) $name`: Type name alias or type annotation to retireve
+
 
 **Return Values**
 
@@ -83,12 +83,9 @@ Registers a new type
 
 **Parameters**
 
-* `(string) $name`
-: New type name (alias) to register that can be later  
-retrieved by calling {@see \self::get()}.* `(callable|string) $type`
-: Validation \Closure, callable to  
-{@see \self::wrap()}, type name alias or  
-Flow annotation.
+* `(string) $name`: New type name (alias) to register that can be later retrieved by calling [self::get()](#registryget).
+* `(callable|string) $type`: Validation \Closure, callable to [self::wrap()](#registryget), type name alias or Flow annotation.
+
 
 **Return Values**
 

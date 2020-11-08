@@ -5,6 +5,8 @@ If it walks like a duck and talks like a duck, treat it like a duck, even if itâ
 
 This tool let's you use basic [FLow annotation syntax](https://flow.org/en/docs/types/) to check data flowing through it. It can generate validation [\Closures](https://www.php.net/manual/en/class.closure) (validator) from a Flow annotation.
 
+[Read the full storyâ€¦](https://martinadamko.medium.com/asserts-with-flow-annotations-in-php7-83126b5f58ab)
+
 ```php
 <?php
 

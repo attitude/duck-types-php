@@ -149,10 +149,10 @@ final class IncompatibleTypeError extends \TypeError {
   /**
    * Returns type representation of the variable
    *
-   * @param [type] $value
-   * @return void
+   * @param mixed $value
+   * @return string
    */
-  public static function getttype($value) {
+  public static function getttype($value): string {
     $type = gettype($value);
 
     switch ($type) {
@@ -179,9 +179,9 @@ final class IncompatibleTypeError extends \TypeError {
    * @see IncompatibleTypeError::getttype()
    *
    * @param mixed $given
-   * @return void
+   * @return string
    */
-  public static function escapedGettype($given) {
+  public static function escapedGettype($given): string {
     if (is_string($given) && substr($given, 0, 1) === '\\') {
       return substr($given, 1);
     }
@@ -192,8 +192,8 @@ final class IncompatibleTypeError extends \TypeError {
   /**
    * Returns passed array or null if the array is empty
    *
-   * @param [type] $value
-   * @return void
+   * @param null|array $value
+   * @return null|array
    */
   protected static function nullIfEmptyArray(array $value = null) {
     return isset($value) && !(is_array($value) && empty($value)) ? $value : null;
@@ -219,9 +219,9 @@ final class IncompatibleTypeError extends \TypeError {
    * Flattens passed array into one-dimmensional array
    *
    * @param array $array
-   * @return void
+   * @return array
    */
-  public static function flatArray(array $array) {
+  public static function flatArray(array $array): array {
     $return = array();
 
     array_walk_recursive($array, function($a) use (&$return) { $return[] = $a; });

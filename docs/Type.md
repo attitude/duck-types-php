@@ -10,7 +10,7 @@ Duck\Types\TypeInterface
 
 | Name | Description |
 |------|-------------|
-|Type::SHOULD_THROW = 1|Alias of `true`|
+|Type::SHOULD_THROW = true|Alias of `true`|
 
 ## Methods
 
@@ -20,8 +20,7 @@ Duck\Types\TypeInterface
 |[Type::any()](#typeany)|Factory that evaluates any \Closure apssed as erguments|
 |[Type::for()](#typefor)|Get or set type \Closure|
 |[Type::is()](#typeis)|Checks given value against the type|
-|[Type::pass()](#typepass)|Passes `$value` through if it is compatible with the $type otherwise throws
-a new {@see IncompatibleTypeError}|
+|[Type::pass()](#typepass)|Passes `$value` through if it is compatible with the $type otherwise throws a [new IncompatibleTypeError](https://github.com/attitude/duck-types-php/blob/main/docs/IncompatibleTypeError.md)|
 |[Type::shouldThrow()](#typeshouldthrow)|Assertion to test if the type check fails|
 |[Type::wrap()](#typewrap)|Wraps existing callable and throws according to result|
 
@@ -93,8 +92,8 @@ Get or set type \Closure
 
 **Parameters**
 
-* `(string|\Closure) $type`
-: Type annotation or \Closure
+* `(string|\Closure) $type`: Type annotation or \Closure
+
 
 **Return Values**
 
@@ -118,9 +117,9 @@ Checks given value against the type
 
 **Parameters**
 
-* `(mixed) $value`
-: Value to type check* `(string|\Closure) $type`
-: Annotation or type validation \Closure
+* `(mixed) $value`: Value to type check
+* `(string|\Closure) $type`: Annotation or type validation \Closure
+
 
 **Return Values**
 
@@ -140,18 +139,14 @@ Checks given value against the type
 public static pass (mixed $value, string|\Closure $type, mixed $default): void
 ```
 
-Passes `$value` through if it is compatible with the $type otherwise throws
-a new {@see IncompatibleTypeError}
-Can also check the `$default` value.  
-  
-Set `DUCK_TYPE_VAlIDATION_IS_ENABLED` constant to `false` to entirelly skip  
-type checking, e.g. in production environment.
+Passes `$value` through if it is compatible with the $type otherwise throws a [new IncompatibleTypeError](https://github.com/attitude/duck-types-php/blob/main/docs/IncompatibleTypeError.md)
+Can also check the `$default` value. Set `DUCK_TYPE_VAlIDATION_IS_ENABLED` constant to `false` to entirelly skip type checking, e.g. in production environment.
 **Parameters**
 
-* `(mixed) $value`
-: Value to pass through (and to validate)* `(string|\Closure) $type`
-: Annotation or type validation \Closure* `(mixed) $default`
-: ptional value to pass if the `$value` is not set
+* `(mixed) $value`: Value to pass through (and to validate)
+* `(string|\Closure) $type`: Annotation or type validation \Closure
+* `(mixed) $default`: ptional value to pass if the `$value` is not set
+
 
 **Return Values**
 
@@ -173,9 +168,9 @@ Assertion to test if the type check fails
 Returns IncompatibleTypeError for further investigation.
 **Parameters**
 
-* `(string) $message`
-: Message to compare to* `(callable) $test`
-: Callable test to invoke
+* `(string) $message`: Message to compare to
+* `(callable) $test`: Callable test to invoke
+
 
 **Return Values**
 
@@ -196,16 +191,13 @@ public static wrap (callable $function, string|null $type, callable|null $should
 ```
 
 Wraps existing callable and throws according to result
-`$shouldThrow` \Closure must return a `boolean`. Default is to throw when  
-the return value of the `$callable` is `false` or when it is not set to  
-handle built-in functions like {@see \is_int()} or {@see \is_string()}.
+`$shouldThrow` \Closure must return a `boolean`. Default is to throw when the return value of the `$callable` is `false` or when it is not set to handle built-in functions like {@see \is_int()} or {@see \is_string()}.
 **Parameters**
 
-* `(callable) $function`
-: A function to wrap in \Closure* `(string|null) $type`
-: Name to use in \Throwable message* `(callable|null) $shouldThrow`
-: Resolves whether to throw according to  
-the result value of $callable.
+* `(callable) $function`: A function to wrap in \Closure
+* `(string|null) $type`: Name to use in \Throwable message
+* `(callable|null) $shouldThrow`: Resolves whether to throw according to the result value of $callable.
+
 
 **Return Values**
 

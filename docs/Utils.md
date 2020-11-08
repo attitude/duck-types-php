@@ -59,9 +59,9 @@ Retrieves constant by it's name
 If constant is not defained, default value is returned if provided.
 **Parameters**
 
-* `(string) $name`
-: Constant name* `(mixed) $default`
-: Default value
+* `(string) $name`: Constant name
+* `(mixed) $default`: Default value
+
 
 **Return Values**
 

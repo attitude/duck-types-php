@@ -266,9 +266,9 @@ final class Registry implements RegistryInterface {
    * Registers a new type
    *
    * @param string $name New type name (alias) to register that can be later
-   *                     retrieved by calling {@see self::get()}.
+   *                     retrieved by calling [self::get()](#registryget).
    * @param callable|string $type Validation \Closure, callable to
-   *                              {@see self::wrap()}, type name alias or
+   *                              [self::wrap()](#registryget), type name alias or
    *                              Flow annotation.
    * @return \Closure
    *

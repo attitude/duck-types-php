@@ -7,6 +7,7 @@ return (object)[
     'classes' => [
         '\Duck\Types\Annotation',
         '\Duck\Types\ErrorCodes',
+        '\Duck\Types\IncompatibleTypeError',
         '\Duck\Types\Registry',
         '\Duck\Types\Type',
         '\Duck\Types\Utils'

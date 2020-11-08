@@ -30,7 +30,8 @@ namespace Duck\Types;
  * - Intersection types, e.g. `{ a: int } & {b : float }`
  * - Grouping with parentheses, e.g. `(int | string)[]`
  *
- * Type aliases are supported by using {@see Types::set()} method that can
+ * Type aliases are supported by using [Registry::set()](https://github.com/attitude/duck-types-php/blob/main/docs/Registry.md#registryset)
+ * method that can
  * registers any alias of compiled validator or any \Closure validator.
  *
  * @see https://flow.org/en/docs/types/ - Flow Type Annotations
