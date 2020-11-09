@@ -275,7 +275,7 @@ final class IncompatibleTypeError extends \TypeError {
             return "${messages} at index #${key} in array members of property `${path}`";
           }
 
-          throw new \Exception('Logical error.', ErrorCodes::INTERNAL);
+          return static::flatArray($messages);
         }, $this->previous, array_keys($this->previous)));
       break;
 
