@@ -674,14 +674,32 @@ final class Annotation implements AnnotationInterface {
                 "\\property `${key}`",
                 'missing in '.($exact ? 'exact shape' : 'shape').' but exists in object literal',
               );
-            } else {
-              $type = isset($_shape[$key]) ? $_shape[$key] : ($indexer ? $indexer->value : null);
+            } elseif (isset($_shape[$key])) {
+              $type = $_shape[$key];
+
+              try {
+                $type($item);
+              } catch (\TypeError $th) {
+                $errors[$key] = static::maybeThrowException($th);
+              }
+            } elseif ($indexer) {
+              try {
+                // Key matches indexer key type
+                ($indexer->key)($key);
+                $type = $indexer->value;
+              } catch (IncompatibleTypeError $th) {
+                $type = null;
+              }
 
               if ($type) {
                 try {
                   $type($item);
                 } catch (\TypeError $th) {
-                  $errors[$key] = static::maybeThrowException($th);
+                  $errors[$key] = new IncompatibleTypeError(
+                    "\\property `${key}` mathing indexer key",
+                    'missing in '.($exact ? 'exact shape' : 'shape').' but exists in object literal',
+                    static::maybeThrowException($th)
+                  );
                 }
               }
             }
