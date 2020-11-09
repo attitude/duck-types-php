@@ -31,11 +31,12 @@ TypeError
 
 | Name | Description |
 |------|-------------|
-|[IncompatibleTypeError->debug()](#incompatibletypeerrordebug)|Helper method to introspect the caught errors tree|
+|[IncompatibleTypeError->debug()](#incompatibletypeerror-debug)|Helper method to introspect the caught errors tree|
 |[IncompatibleTypeError::escapedGettype()](#incompatibletypeerrorescapedgettype)|Returns variable type except strings with "\\" escape character|
 |[IncompatibleTypeError::flatArray()](#incompatibletypeerrorflatarray)|Flattens passed array into one-dimmensional array|
-|[IncompatibleTypeError->getMessages()](#incompatibletypeerrorgetmessages)|Retrieves all error messages|
-|[IncompatibleTypeError->getUnexpected()](#incompatibletypeerrorgetunexpected)|Returns unexpected condition met|
+|[IncompatibleTypeError->getDeepestPrevious()](#incompatibletypeerror-getdeepestprevious)|Retuns the deepest thrown Error|
+|[IncompatibleTypeError->getMessages()](#incompatibletypeerror-getmessages)|Retrieves all error messages|
+|[IncompatibleTypeError->getUnexpected()](#incompatibletypeerror-getunexpected)|Returns unexpected condition met|
 |[IncompatibleTypeError::getttype()](#incompatibletypeerrorgetttype)|Returns type representation of the variable|
 
 ## Inherited methods
@@ -126,6 +127,33 @@ Flattens passed array into one-dimmensional array
 **Return Values**
 
 `array`
+
+
+
+
+---
+
+### IncompatibleTypeError->getDeepestPrevious()
+
+**Description**
+
+
+```php
+public getDeepestPrevious (void): \Throwable
+```
+
+Retuns the deepest thrown Error
+
+Note that recursion will stop at the first error with multiple errors and this error is returned.
+
+**Parameters**
+
+`This function has no parameters.`
+
+
+**Return Values**
+
+`\Throwable`
 
 
 

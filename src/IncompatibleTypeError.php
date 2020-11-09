@@ -209,6 +209,7 @@ final class IncompatibleTypeError extends \TypeError {
       'message' => $this->message,
       'given' => $this->given,
       'unexpected' => $this->unexpected,
+      'path' => "{$this->file}:{$this->line}",
       'previous' => static::nullIfEmptyArray(array_map(function($th) {
         return $th->debug();
       }, $this->previous)),
@@ -332,5 +333,27 @@ final class IncompatibleTypeError extends \TypeError {
     var_dump($this->previous);
 
     throw new \Exception("Not implemented `{$this->unexpected}`", ErrorCodes::NOT_IMPLEMENTED);
+  }
+
+  /**
+   * Retuns the deepest thrown Error
+   *
+   * Note that recursion will stop at the first error with multiple errors and
+   * this error is returned.
+   *
+   * @return \Throwable
+   */
+  public function getDeepestPrevious(): \Throwable {
+    $maybePrevious = $this->getPrevious();
+
+    if (isset($maybePrevious)) {
+      if ($maybePrevious instanceof IncompatibleTypeError) {
+        return $maybePrevious->getDeepestPrevious();
+      }
+
+      return $maybePrevious->getPrevious();
+    }
+
+    return $this;
   }
 }

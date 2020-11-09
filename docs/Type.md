@@ -39,7 +39,9 @@ public static all (\Closure $conditions): \Closure
 ```
 
 Factory that evaluates all \Closure apssed as erguments
+
 \TypeError will be thrown if any of the tests fails.
+
 **Parameters**
 
 * `(\Closure) $conditions`
@@ -64,7 +66,9 @@ public static any (\Closure $conditions): \Closure
 ```
 
 Factory that evaluates any \Closure apssed as erguments
+
 \TypeError will be thrown only if all of the tests fail.
+
 **Parameters**
 
 * `(\Closure) $conditions`
@@ -140,7 +144,9 @@ public static pass (mixed $value, string|\Closure $type, mixed $default): void
 ```
 
 Passes `$value` through if it is compatible with the $type otherwise throws a [new IncompatibleTypeError](https://github.com/attitude/duck-types-php/blob/main/docs/IncompatibleTypeError.md)
+
 Can also check the `$default` value. Set `DUCK_TYPE_VAlIDATION_IS_ENABLED` constant to `false` to entirelly skip type checking, e.g. in production environment.
+
 **Parameters**
 
 * `(mixed) $value`: Value to pass through (and to validate)
@@ -165,7 +171,9 @@ public static shouldThrow (string $message, callable $test): \IncompatibleTypeEr
 ```
 
 Assertion to test if the type check fails
+
 Returns IncompatibleTypeError for further investigation.
+
 **Parameters**
 
 * `(string) $message`: Message to compare to
@@ -191,7 +199,9 @@ public static wrap (callable $function, string|null $type, callable|null $should
 ```
 
 Wraps existing callable and throws according to result
+
 `$shouldThrow` \Closure must return a `boolean`. Default is to throw when the return value of the `$callable` is `false` or when it is not set to handle built-in functions like {@see \is_int()} or {@see \is_string()}.
+
 **Parameters**
 
 * `(callable) $function`: A function to wrap in \Closure
