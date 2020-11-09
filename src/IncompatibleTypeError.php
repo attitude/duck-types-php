@@ -252,7 +252,9 @@ final class IncompatibleTypeError extends \TypeError {
           return $th->getUnexpected();
         }, $this->previous);
 
-        return "$this->message because {$this->given} is either ".implode(' or ', $incompatibilities);
+        return "$this->message because {$this->given} is either "
+          .implode(' or ', $incompatibilities)
+          .($path ? " of property `${path}`" : '');
       break;
 
       case static::INCOMPATIBLE_WITH_INTERSECTION:
@@ -275,7 +277,11 @@ final class IncompatibleTypeError extends \TypeError {
             return "${messages} at index #${key} in array members of property `${path}`";
           }
 
-          return static::flatArray($messages);
+          $messages = array_map(function(string $message) use ($key, $path) {
+            return "${message} at index #${key} in array members of property `${path}`";
+          }, static::flatArray($messages));
+
+          return $messages;
         }, $this->previous, array_keys($this->previous)));
       break;
 
@@ -310,7 +316,9 @@ final class IncompatibleTypeError extends \TypeError {
       case static::INCOMPATIBLE_WITH_EXACT_SHAPE:
       case static::INCOMPATIBLE_WITH_ARRAY:
       case static::INCOMPATIBLE_WITH_TUPLE:
-          return $this->message;
+          return $this->message
+            .($path ? " of property `${path}`" : '');
+          ;
       break;
     }
 
@@ -318,7 +326,9 @@ final class IncompatibleTypeError extends \TypeError {
 
 
     if ($previousCount === 0) {
-      return $this->message;
+      return $this->message
+        .($path ? " of property `${path}`" : '');
+      ;
     }
 
     if ($previousCount === 1) {
