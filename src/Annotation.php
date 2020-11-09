@@ -269,6 +269,11 @@ final class Annotation implements AnnotationInterface {
           // } else {
           // }
           $key = $sub;
+
+          if (!is_string($key)) {
+            throw new \Exception("Unexpected syntax error; Did you misplaced `?` on object property? Object property must be a string, e.g. `{ key?: string }`, not: ".json_encode($key), ErrorCodes::FORBIDDEN);
+          }
+
           $next[$key] = [];
         } else {
           $next[$key][] = $sub;
