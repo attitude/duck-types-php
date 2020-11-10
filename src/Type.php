@@ -12,6 +12,7 @@ final class Type implements TypeInterface {
   /**
    * Get or set type with annotation or \Closure
    *
+   * @param string $name Name alias for the tupe
    * @param string|\Closure $type Type annotation or \Closure
    * @return \Closure
    */

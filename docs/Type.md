@@ -89,13 +89,14 @@ Factory that evaluates any \Closure apssed as erguments
 
 
 ```php
-public static for (string|\Closure $type): \Closure
+public static for (string $name, string|\Closure $type): \Closure
 ```
 
 Get or set type with annotation or \Closure
 
 **Parameters**
 
+* `(string) $name`: Name alias for the tupe
 * `(string|\Closure) $type`: Type annotation or \Closure
 
 
