@@ -4,6 +4,7 @@ namespace Duck\Types;
 
 final class Registry implements RegistryInterface {
   private static $registry = [];
+  private static $autoloaders = [];
 
   /**
    * Returns a validator for a built-in type
@@ -231,7 +232,51 @@ final class Registry implements RegistryInterface {
   }
 
   /**
-   * Checks if type exists in registry
+   * Registers a type-autoloader method to resolve loading of type.
+   * 
+   * Autoload function should try to set the requested type by calling
+   * `Type:for($name, $annotationOrClosure)` inside the type-autoload function.
+   *
+   * @param string $name Autoloader anme to register
+   * @param \Closure $resolver Callable that is called when trying to find out
+   *                           whether the type might exist. Callable should
+   *                           expect one paramenter, the name of the type.
+   * @return void
+   */
+  public static function registerAutoloader(string $name, callable $resolver): void {
+    $reflection = new \ReflectionFunction($resolver);
+
+    if ($reflection->getNumberOfParameters() !== 1) {
+      throw new \Exception("Expecting `${name}` autoloader to be a function/closure with one parameter", ErrorCodes::METHOD_NOT_ALLOWED);
+    }
+
+    static::$autoloaders[$name] = $resolver;
+  }
+
+  /**
+   * Checks if the type is already registered
+   * 
+   * Difference between `Registry::exists()` is that this method escapess
+   * all autoloader, even the built-in.
+   *
+   * @param string $name
+   * @return boolean
+   */
+  public static function has(string $name): bool {
+    if (isset(static::$registry[$name])) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Checks if type exists in registry & tries to load it if not
+   *
+   * Uses autoload registerd using `Registry::registerAutoloader()`.
+   *
+   * **IMPORTANT:** Do not call this method inside any type-autoload function.
+   * If yu need to check if the type was already registered, use `Registry::has()`
    *
    * @param string $name Type name to check
    * @return bool
@@ -257,6 +302,17 @@ final class Registry implements RegistryInterface {
 
       return true;
     } catch (\Throwable $th) {
+    }
+
+    try {
+      foreach(static::$autoloaders as $autoloaders) {
+        $autoloaders($name);
+      }
+    } catch (\Throwable $th) {
+    }
+
+    if (isset(static::$registry[$name])) {
+      return true;
     }
 
     return false;
