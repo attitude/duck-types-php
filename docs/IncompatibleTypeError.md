@@ -69,6 +69,8 @@ public debug (void): void
 
 Helper method to introspect the caught errors tree
 
+
+
 **Parameters**
 
 `This function has no parameters.`
@@ -93,6 +95,8 @@ public static escapedGettype (mixed $given): string
 ```
 
 Returns variable type except strings with "\\" escape character
+
+
 
 **Parameters**
 
@@ -119,6 +123,8 @@ public static flatArray (array $array): array
 
 Flattens passed array into one-dimmensional array
 
+
+
 **Parameters**
 
 * `(array) $array`
@@ -144,7 +150,8 @@ public getDeepestPrevious (void): \Throwable
 
 Retuns the deepest thrown Error
 
-Note that recursion will stop at the first error with multiple errors and this error is returned.
+Note that recursion will stop at the first error with multiple errors and
+this error is returned.
 
 **Parameters**
 
@@ -171,6 +178,8 @@ public getMessages (void): string[]|string
 
 Retrieves all error messages
 
+
+
 **Parameters**
 
 `This function has no parameters.`
@@ -196,6 +205,8 @@ public getUnexpected (void): string
 
 Returns unexpected condition met
 
+
+
 **Parameters**
 
 `This function has no parameters.`
@@ -220,6 +231,8 @@ public static getttype (mixed $value): string
 ```
 
 Returns type representation of the variable
+
+
 
 **Parameters**
 

@@ -33,7 +33,10 @@ public static exists (string $name): bool
 
 Checks if type exists in registry & tries to load it if not
 
-Uses autoload registerd using `Registry::registerAutoloader()`. **IMPORTANT:** Do not call this method inside any type-autoload function. If yu need to check if the type was already registered, use `Registry::has()`
+Uses autoload registerd using `Registry::registerAutoloader()`.
+
+**IMPORTANT:** Do not call this method inside any type-autoload function.
+If yu need to check if the type was already registered, use `Registry::has()`
 
 **Parameters**
 
@@ -60,6 +63,8 @@ public static get (string $name): \Closure
 
 Retrieves an already registered type by it's name, literal validators
 
+
+
 **Parameters**
 
 * `(string) $name`: Type name alias or type annotation to retireve
@@ -85,7 +90,8 @@ public static has (string $name): bool
 
 Checks if the type is already registered
 
-Difference between `Registry::exists()` is that this method escapess all autoloader, even the built-in.
+Difference between `Registry::exists()` is that this method escapess
+all autoloader, even the built-in.
 
 **Parameters**
 
@@ -112,7 +118,8 @@ public static registerAutoloader (string $name, \Closure $resolver): void
 
 Registers a type-autoloader method to resolve loading of type.
 
-Autoload function should try to set the requested type by calling `Type:for($name, $annotationOrClosure)` inside the type-autoload function.
+Autoload function should try to set the requested type by calling
+`Type:for($name, $annotationOrClosure)` inside the type-autoload function.
 
 **Parameters**
 
@@ -139,6 +146,8 @@ public static set (string $name, callable|string $type): \Closure
 ```
 
 Registers a new type
+
+
 
 **Parameters**
 

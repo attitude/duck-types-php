@@ -94,6 +94,8 @@ public static for (string $name, string|\Closure $type): \Closure
 
 Get or set type with annotation or \Closure
 
+
+
 **Parameters**
 
 * `(string) $name`: Name alias for the tupe
@@ -119,6 +121,8 @@ public static is (mixed $value, string $type): bool
 ```
 
 Checks given value against the type
+
+
 
 **Parameters**
 
@@ -146,7 +150,10 @@ public static pass (mixed $value, string|\Closure $type, mixed $default): void
 
 Passes `$value` through if it is compatible with the $type otherwise throws a [new IncompatibleTypeError](https://github.com/attitude/duck-types-php/blob/main/docs/IncompatibleTypeError.md)
 
-Can also check the `$default` value. Set `DUCK_TYPE_VAlIDATION_IS_ENABLED` constant to `false` to entirelly skip type checking, e.g. in production environment.
+Can also check the `$default` value.
+
+Set `DUCK_TYPE_VAlIDATION_IS_ENABLED` constant to `false` to entirelly skip
+type checking, e.g. in production environment.
 
 **Parameters**
 
@@ -201,7 +208,9 @@ public static wrap (callable $function, string|null $type, callable|null $should
 
 Wraps existing callable and throws according to result
 
-`$shouldThrow` \Closure must return a `boolean`. Default is to throw when the return value of the `$callable` is `false` or when it is not set to handle built-in functions like {@see \is_int()} or {@see \is_string()}.
+`$shouldThrow` \Closure must return a `boolean`. Default is to throw when
+the return value of the `$callable` is `false` or when it is not set to
+handle built-in functions like {@see \is_int()} or {@see \is_string()}.
 
 **Parameters**
 

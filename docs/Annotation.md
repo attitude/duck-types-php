@@ -67,6 +67,8 @@ public static compile (array $tree): \Closure
 
 Compiles AST-like tree into validator \Closure
 
+
+
 **Parameters**
 
 * `(array) $tree`: AST-like tree genereated with {@see \Annotation::parse()}
@@ -91,6 +93,8 @@ public static parse (string $annotation): array
 ```
 
 Parses Flow annotation into AST-like tree
+
+
 
 **Parameters**
 

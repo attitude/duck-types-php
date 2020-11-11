@@ -42,16 +42,16 @@
         },
         {
             "name": "clean/phpdoc-md",
-            "version": "0.20.2",
+            "version": "0.20.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/attitude/phpdoc-md.git",
-                "reference": "5aad4b3c01dc51825964bb90151c4c98460adf49"
+                "reference": "c994cec99cb0576c1633c85d02b52544dc230079"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/attitude/phpdoc-md/zipball/5aad4b3c01dc51825964bb90151c4c98460adf49",
-                "reference": "5aad4b3c01dc51825964bb90151c4c98460adf49",
+                "url": "https://api.github.com/repos/attitude/phpdoc-md/zipball/c994cec99cb0576c1633c85d02b52544dc230079",
+                "reference": "c994cec99cb0576c1633c85d02b52544dc230079",
                 "shasum": ""
             },
             "require": {
@@ -90,9 +90,9 @@
                 "phpdoc"
             ],
             "support": {
-                "source": "https://github.com/attitude/phpdoc-md/tree/0.20.2"
+                "source": "https://github.com/attitude/phpdoc-md/tree/0.20.3"
             },
-            "time": "2020-11-09T12:28:28+00:00"
+            "time": "2020-11-11T21:50:58+00:00"
         },
         {
             "name": "clean/view",

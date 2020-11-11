@@ -31,6 +31,8 @@ public static assertCallable (callable $callable, string $name): void
 
 Asserts valid type
 
+
+
 **Parameters**
 
 * `(callable) $callable`
@@ -84,6 +86,8 @@ public static getReturnType (callable $function): string|void
 ```
 
 Retrieves return value of any callable
+
+
 
 **Parameters**
 
