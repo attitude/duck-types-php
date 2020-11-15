@@ -70,7 +70,7 @@ final class IncompatibleTypeError extends \TypeError {
    * @param string $unexpected
    * @return string
    */
-  protected static function __readableExpected(string $unexpected): string {
+  protected static function __readableUnexpected(string $unexpected): string {
     switch ($unexpected) {
       case static::INCOMPATIBLE_WITH_UNION:
         return 'incompatible with union';
@@ -122,7 +122,7 @@ final class IncompatibleTypeError extends \TypeError {
     $given = static::escapedGettype($given);
     $this->given = $given;
 
-    $message = sprintf("%s is %s", $given, static::__readableExpected($unexpected));
+    $message = sprintf("%s is %s", $given, static::__readableUnexpected($unexpected));
 
     parent::__construct($message, null, $previous instanceof \Throwable ? $previous : null);
 
@@ -249,7 +249,7 @@ final class IncompatibleTypeError extends \TypeError {
         }
 
         $incompatibilities = array_map(function(IncompatibleTypeError $th) {
-          return $th->getUnexpected();
+          return static::__readableUnexpected($th->getUnexpected());
         }, $this->previous);
 
         return "$this->message because {$this->given} is either "
