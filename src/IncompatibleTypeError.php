@@ -242,9 +242,9 @@ final class IncompatibleTypeError extends \TypeError {
           return $th->getMessages($path) ;
         }, $this->previous);
 
-        $deepErrors = array_filter($messages, 'is_array');
+        $messages = array_flatten($messages);
 
-        if ($deepErrors) {
+        if ($messages) {
           return $messages;
         }
 
