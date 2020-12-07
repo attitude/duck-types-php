@@ -696,7 +696,7 @@ final class Annotation implements AnnotationInterface {
                   $type($item);
                 } catch (\TypeError $th) {
                   $errors[$key] = new IncompatibleTypeError(
-                    "\\property `${key}` mathing indexer key",
+                    "\\property `${key}` matching indexer key",
                     'missing in '.($exact ? 'exact shape' : 'shape').' but exists in object literal',
                     static::maybeThrowException($th)
                   );
