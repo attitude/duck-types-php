@@ -3,7 +3,7 @@
     "description": "If it walks like a duck and talks like a duck, treat it like a duck, even if it’s not — a dynamic typing for PHP inspired by Flow types.",
     "type": "dev-library",
     "require": {
-        "php": "^7.3.5"
+        "php": "^7.3.5||^8.0"
     },
     "license": "MIT",
     "authors": [
