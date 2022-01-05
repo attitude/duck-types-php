@@ -242,7 +242,7 @@ final class IncompatibleTypeError extends \TypeError {
           return $th->getMessages($path) ;
         }, $this->previous);
 
-        $messages = array_flatten($messages);
+        $messages = static::flatArray($messages);
 
         if ($messages) {
           return $messages;
