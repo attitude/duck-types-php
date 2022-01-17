@@ -17,6 +17,11 @@
             "Duck\\Types\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "Duck\\Types\\Tests\\": "tests/"
+        }
+    },
     "repositories": [
         {
             "type": "vcs",
@@ -24,7 +29,8 @@
         }
     ],
     "require-dev": {
-        "clean/phpdoc-md": "^0.20.0"
+        "clean/phpdoc-md": "^0.20.0",
+        "phpunit/phpunit": "^9.5"
     },
     "scripts": {
         "build-docs": "./vendor/bin/phpdoc-md"
